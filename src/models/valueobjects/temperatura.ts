@@ -13,5 +13,9 @@ export class Temperatura {
       throw new Error("La temperatura se encuentra fuera de rango");
     }
   }
+
+  get Valor(): number {
+    return this.valor;
+  }
 }
 

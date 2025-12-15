@@ -9,6 +9,7 @@ import { FrecuenciaCardiaca } from "../../models/valueobjects/frecuenciaCardiaca
 import { FrecuenciaRespiratoria } from "../../models/valueobjects/frecuenciaRespiratoria.js";
 import { TensionArterial } from "../../models/valueobjects/tensionArterial.js";
 import { Atencion } from "../../models/atencion.js";
+import { AgentePriorizacion, ResultadoPriorizacion } from "./agentePriorizacion.js";
 
 interface RegistrarUrgenciaArgs {
   cuil: string;
@@ -26,9 +27,14 @@ export class UrgenciaService {
   private repoPacientes: RepoPacientes;
   private listaEspera: Ingreso[] = [];
   private atenciones: Atencion[] = [];
+  private agentePriorizacion: AgentePriorizacion;
 
-  public constructor(repoPacientes: RepoPacientes) {
+  public constructor(
+    repoPacientes: RepoPacientes,
+    agentePriorizacion: AgentePriorizacion = new AgentePriorizacion(),
+  ) {
     this.repoPacientes = repoPacientes;
+    this.agentePriorizacion = agentePriorizacion;
   }
 
   public registrarUrgencia({
@@ -67,6 +73,16 @@ export class UrgenciaService {
 
   public obtenerIngresosPendientes(): Ingreso[] {
     return this.obtenerIngresosPendientesOrdenados();
+  }
+
+  public sugerirProximoIngreso(): ResultadoPriorizacion | null {
+    const pendientes: Ingreso[] = this.obtenerIngresosPendientesOrdenados();
+    return this.agentePriorizacion.sugerir(pendientes, new Date());
+  }
+
+  public sugerirOrdenDeAtencion(): ResultadoPriorizacion[] {
+    const pendientes: Ingreso[] = this.obtenerIngresosPendientesOrdenados();
+    return this.agentePriorizacion.sugerirOrden(pendientes, new Date());
   }
 
   public registrarAtencion(

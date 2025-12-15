@@ -9,6 +9,7 @@ import { Email } from '../../../models/valueobjects/email.js';
 import { Afiliado } from '../../../models/afiliado.js';
 import { ObraSocial } from '../../../models/obraSocial.js';
 import { Domicilio } from '../../../models/domicilio.js';
+import { ResultadoPriorizacion } from '../../service/agentePriorizacion.js';
 
 export class UrgenciasController {
   private urgenciaService: UrgenciaService;
@@ -106,6 +107,42 @@ export class UrgenciasController {
     try {
       const ingresosPendientes = this.urgenciaService.obtenerIngresosPendientes();
       res.status(200).json(ingresosPendientes.map((ingreso) => ingreso.toJSON()));
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      res.status(500).json({ error: errorMessage });
+    }
+  }
+
+  public async obtenerSugerenciaPriorizacion(req: Request, res: Response): Promise<void> {
+    try {
+      const sugerencia: ResultadoPriorizacion | null = this.urgenciaService.sugerirProximoIngreso();
+      if (!sugerencia) {
+        res.status(200).json(null);
+        return;
+      }
+      res.status(200).json({
+        sugerido: sugerencia.ingreso.toJSON(),
+        puntaje: sugerencia.puntaje,
+        razones: sugerencia.razones,
+        nivelEmergencia: sugerencia.nivelEmergencia,
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      res.status(500).json({ error: errorMessage });
+    }
+  }
+
+  public async obtenerSugerenciaOrden(req: Request, res: Response): Promise<void> {
+    try {
+      const orden: ResultadoPriorizacion[] = this.urgenciaService.sugerirOrdenDeAtencion();
+      res.status(200).json({
+        orden: orden.map((item) => ({
+          ingreso: item.ingreso.toJSON(),
+          puntaje: item.puntaje,
+          razones: item.razones,
+          nivelEmergencia: item.nivelEmergencia,
+        })),
+      });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
       res.status(500).json({ error: errorMessage });

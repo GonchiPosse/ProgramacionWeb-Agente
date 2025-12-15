@@ -14,6 +14,7 @@ interface IngresoArgs {
   informe: string;
   nivelEmergencia: NivelEmergencia;
   estado?: EstadoIngreso;
+  fechaIngreso?: Date;
   temperatura: number;
   frecuenciaCardiaca: number;
   frecuenciaRespiratoria: number;
@@ -37,7 +38,7 @@ export class Ingreso {
   public constructor(args: IngresoArgs) {
     this.paciente = args.paciente;
     this.enfermera = args.enfermera;
-    this.fechaIngreso = new Date();
+    this.fechaIngreso = args.fechaIngreso ?? new Date();
     this.informe = args.informe;
     this.nivelEmergencia = args.nivelEmergencia;
     this.estado = args.estado || EstadoIngreso.PENDIENTE;
@@ -74,6 +75,30 @@ export class Ingreso {
 
   get FechaIngreso(): Date {
     return this.fechaIngreso;
+  }
+
+  get Informe(): string {
+    return this.informe;
+  }
+
+  get Temperatura(): number {
+    return this.temperatura.Valor;
+  }
+
+  get FrecuenciaCardiaca(): number {
+    return this.frecuenciaCardiaca.Valor;
+  }
+
+  get FrecuenciaRespiratoria(): number {
+    return this.frecuenciaRespiratoria.Valor;
+  }
+
+  get TensionArterialSistolica(): number {
+    return this.tensionArterial.Sistolica;
+  }
+
+  get TensionArterialDiastolica(): number {
+    return this.tensionArterial.Diastolica;
   }
 
   get Estado(): EstadoIngreso {

@@ -21,6 +21,23 @@ interface Ingreso {
   nivelEmergencia: NivelEmergenciaIngreso;
   fechaIngreso?: string;
   estado?: string;
+  informe?: string;
+}
+
+interface SugerenciaPriorizacion {
+  sugerido: Ingreso;
+  puntaje: number;
+  razones: string[];
+}
+
+interface SugerenciaOrdenItem {
+  ingreso: Ingreso;
+  puntaje: number;
+  razones: string[];
+}
+
+interface SugerenciaOrdenResponse {
+  orden: SugerenciaOrdenItem[];
 }
 
 export default function ListaEspera({
@@ -31,9 +48,16 @@ export default function ListaEspera({
   onReclamoExitoso?: () => void;
 }) {
   const [ingresos, setIngresos] = useState<Ingreso[]>([]);
+  const [sugerencia, setSugerencia] = useState<SugerenciaPriorizacion | null>(
+    null,
+  );
+  const [ordenSugerido, setOrdenSugerido] = useState<SugerenciaOrdenItem[] | null>(
+    null,
+  );
   const [userRole, setUserRole] = useState<string>("");
   const [message, setMessage] = useState("");
   const [loadingCuil, setLoadingCuil] = useState<string>("");
+  const [loadingOrden, setLoadingOrden] = useState<boolean>(false);
   const [toastType, setToastType] = useState<"success" | "error">("success");
   const [ingresosAsignados, setIngresosAsignados] = useState<Ingreso[]>([]);
   const [doctorData, setDoctorData] = useState({
@@ -81,6 +105,40 @@ export default function ListaEspera({
     }
   }, []);
 
+  const cargarSugerencia = useCallback(async (): Promise<void> => {
+    try {
+      const res = await fetch("/api/urgencias/sugerencia");
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(txt || "Error al cargar sugerencia");
+      }
+      const data = await res.json();
+      setSugerencia(data);
+    } catch (err) {
+      console.error(err);
+      setSugerencia(null);
+    }
+  }, []);
+
+  const sugerirOrden = useCallback(async (): Promise<void> => {
+    setLoadingOrden(true);
+    try {
+      const res: Response = await fetch("/api/urgencias/sugerencia/orden");
+      if (!res.ok) {
+        const txt: string = await res.text();
+        throw new Error(txt || "Error al cargar sugerencia de orden");
+      }
+      const data: SugerenciaOrdenResponse = await res.json();
+      setOrdenSugerido(data.orden);
+    } catch (err) {
+      console.error(err);
+      setOrdenSugerido(null);
+      setToastType("error");
+      setMessage("Error al sugerir el orden de atención");
+    }
+    setLoadingOrden(false);
+  }, []);
+
   const cargarMisIngresos = useCallback(async (): Promise<void> => {
     if (userRole !== "medico") {
       return;
@@ -106,7 +164,8 @@ export default function ListaEspera({
 
   useEffect(() => {
     cargarIngresos();
-  }, [cargarIngresos, refreshTrigger]);
+    cargarSugerencia();
+  }, [cargarIngresos, cargarSugerencia, refreshTrigger]);
 
   useEffect(() => {
     cargarMisIngresos();
@@ -191,6 +250,16 @@ export default function ListaEspera({
     setLoadingCuil("");
   };
 
+  const sugeridoCuil: string =
+    sugerencia?.sugerido?.paciente?.cuil?.valor || "";
+
+  const ordenSugeridoCuils: string[] = useMemo(() => {
+    if (!ordenSugerido) {
+      return [];
+    }
+    return ordenSugerido.map((o) => o.ingreso.paciente.cuil.valor);
+  }, [ordenSugerido]);
+
   return (
     <>
       <div className="card">
@@ -207,20 +276,166 @@ export default function ListaEspera({
             Lista de Espera
           </h3>
           {userRole === "medico" && (
-            <button
-              onClick={() => handleReclamarPaciente()}
-              className="btn btn-primary"
-              style={{ padding: "0.5rem 1rem" }}
-              disabled={!!loadingCuil || doctorOcupado}
-            >
-              {loadingCuil
-                ? "Reclamando..."
-                : doctorOcupado
-                  ? "Ocupado"
-                  : "Reclamar"}
-            </button>
+            <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+              <button
+                onClick={() => handleReclamarPaciente()}
+                className="btn btn-primary"
+                style={{ padding: "0.5rem 1rem", whiteSpace: "nowrap" }}
+                disabled={!!loadingCuil || doctorOcupado}
+              >
+                {loadingCuil
+                  ? "Reclamando..."
+                  : doctorOcupado
+                    ? "Ocupado"
+                    : "Reclamar"}
+              </button>
+              <button
+                onClick={() => sugerirOrden()}
+                className="btn btn-secondary"
+                style={{ padding: "0.5rem 1rem", whiteSpace: "nowrap" }}
+                disabled={loadingOrden || doctorOcupado}
+              >
+                {loadingOrden ? "Sugiriendo..." : "Sugerir orden"}
+              </button>
+            </div>
           )}
         </div>
+
+        {ordenSugerido && ordenSugerido.length > 0 && (
+          <div
+            style={{
+              padding: "0.75rem",
+              borderRadius: "0.75rem",
+              marginBottom: "1rem",
+              border: "1px solid var(--card-border)",
+              background: "rgba(34, 197, 94, 0.06)",
+            }}
+          >
+            <div style={{ fontWeight: 700, marginBottom: "0.5rem" }}>
+              Orden sugerido de atención
+            </div>
+            <div style={{ overflowX: "auto" }}>
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  textAlign: "left",
+                }}
+              >
+                <thead>
+                  <tr style={{ borderBottom: "1px solid var(--card-border)" }}>
+                    <th style={{ padding: "0.75rem" }}>#</th>
+                    <th style={{ padding: "0.75rem" }}>Paciente</th>
+                    <th style={{ padding: "0.75rem" }}>Nivel</th>
+                    <th style={{ padding: "0.75rem" }}>Puntaje</th>
+                    <th style={{ padding: "0.75rem" }}>Razones</th>
+                    <th style={{ padding: "0.75rem" }} />
+                  </tr>
+                </thead>
+                <tbody>
+                  {ordenSugerido.map((item, idx) => {
+                    const cuil: string = item.ingreso.paciente.cuil.valor;
+                    const razones: string = item.razones.join(" · ");
+                    return (
+                      <tr
+                        key={`${cuil}-${idx}`}
+                        style={{ borderBottom: "1px solid var(--card-border)" }}
+                      >
+                        <td style={{ padding: "0.75rem", fontWeight: 700 }}>
+                          {idx + 1}
+                        </td>
+                        <td style={{ padding: "0.75rem" }}>
+                          {item.ingreso.paciente.nombre}{" "}
+                          {item.ingreso.paciente.apellido}
+                        </td>
+                        <td style={{ padding: "0.75rem" }}>
+                          <span
+                            style={{
+                              padding: "0.25rem 0.75rem",
+                              borderRadius: "999px",
+                              fontSize: "0.875rem",
+                              background: `${getNivelColor(
+                                item.ingreso.nivelEmergencia.descripcion,
+                              )}20`,
+                              color: getNivelColor(
+                                item.ingreso.nivelEmergencia.descripcion,
+                              ),
+                            }}
+                          >
+                            {item.ingreso.nivelEmergencia.descripcion}
+                          </span>
+                        </td>
+                        <td style={{ padding: "0.75rem" }}>{item.puntaje}</td>
+                        <td style={{ padding: "0.75rem", color: "var(--secondary)" }}>
+                          {razones}
+                        </td>
+                        <td style={{ padding: "0.75rem" }}>
+                          {userRole === "medico" && (
+                            <button
+                              onClick={() => handleReclamarPaciente(cuil)}
+                              className="btn btn-primary"
+                              style={{ padding: "0.35rem 0.75rem" }}
+                              disabled={!!loadingCuil || doctorOcupado}
+                            >
+                              Reclamar
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {sugerencia && (
+          <div
+            style={{
+              padding: "0.75rem",
+              borderRadius: "0.75rem",
+              marginBottom: "1rem",
+              border: "1px solid var(--card-border)",
+              background: "rgba(59,130,246,0.06)",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: "1rem",
+            }}
+          >
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700, marginBottom: "0.25rem" }}>
+                Sugerencia del agente
+              </div>
+              <div style={{ color: "var(--secondary)", marginBottom: "0.5rem" }}>
+                {sugerencia.sugerido.paciente.nombre}{" "}
+                {sugerencia.sugerido.paciente.apellido} —{" "}
+                {sugerencia.sugerido.nivelEmergencia.descripcion} (puntaje{" "}
+                {sugerencia.puntaje})
+              </div>
+              {sugerencia.razones.length > 0 && (
+                <ul style={{ margin: 0, paddingLeft: "1.25rem" }}>
+                  {sugerencia.razones.map((r, idx) => (
+                    <li key={idx} style={{ color: "var(--secondary)" }}>
+                      {r}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            {userRole === "medico" && (
+              <button
+                onClick={() => handleReclamarPaciente(sugeridoCuil)}
+                className="btn btn-primary"
+                style={{ padding: "0.5rem 1rem", whiteSpace: "nowrap" }}
+                disabled={!!loadingCuil || doctorOcupado || !sugeridoCuil}
+              >
+                Reclamar sugerido
+              </button>
+            )}
+          </div>
+        )}
 
         {message && (
           <div
@@ -291,7 +506,14 @@ export default function ListaEspera({
                 ingresos.map((ingreso, i) => (
                   <tr
                     key={i}
-                    style={{ borderBottom: "1px solid var(--card-border)" }}
+                    style={{
+                      borderBottom: "1px solid var(--card-border)",
+                      background:
+                        ordenSugeridoCuils.length > 0 &&
+                        ordenSugeridoCuils.includes(ingreso.paciente.cuil.valor)
+                          ? "rgba(34, 197, 94, 0.05)"
+                          : "transparent",
+                    }}
                   >
                     <td style={{ padding: "1rem" }}>
                       {ingreso.paciente.nombre} {ingreso.paciente.apellido}

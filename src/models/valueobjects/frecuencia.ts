@@ -22,4 +22,8 @@ export abstract class Frecuencia {
       throw new Error(`La ${this.nombre.toLowerCase()} se encuentra fuera de rango`);
     }
   }
+
+  get Valor(): number {
+    return this.valor;
+  }
 }

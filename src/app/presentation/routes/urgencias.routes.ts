@@ -16,6 +16,14 @@ export const crearUrgenciasRouter = (urgenciasController: UrgenciasController): 
     urgenciasController.obtenerListaEspera(req, res);
   });
 
+  router.get('/sugerencia', (req, res) => {
+    urgenciasController.obtenerSugerenciaPriorizacion(req, res);
+  });
+
+  router.get('/sugerencia/orden', (req, res) => {
+    urgenciasController.obtenerSugerenciaOrden(req, res);
+  });
+
   router.get('/pacientes', (req, res) => {
     urgenciasController.obtenerTodosLosPacientes(req, res);
   });

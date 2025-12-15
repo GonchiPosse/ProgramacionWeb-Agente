@@ -16,4 +16,12 @@ export class TensionArterial {
       throw error;
     }
   }
+
+  get Sistolica(): number {
+    return this.sistolica.Valor;
+  }
+
+  get Diastolica(): number {
+    return this.diastolica.Valor;
+  }
 }
