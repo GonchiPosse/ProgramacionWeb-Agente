@@ -1,0 +1,132 @@
+Agente de Priorizacion de Pacientes
+
+1. Introduccion 
+En los servicios de guardia hospitalaria, la correcta priorización de pacientes es un factor crítico para garantizar una atención oportuna y segura. Dado que múltiples pacientes pueden encontrarse simultáneamente en espera, 
+resulta necesario contar con un mecanismo que ayude al personal médico a decidir a quién atender primero, especialmente cuando existen casos con niveles de urgencia similares.
+
+En este contexto, se implementó un Agente de Priorización de Pacientes, cuyo objetivo es analizar la información registrada durante el ingreso del paciente y sugerir cuál debería ser atendido prioritariamente, 
+respetando siempre los criterios clínicos definidos por el personal de enfermería.
+
+2. Rol del agente dentro del sistema
+
+El agente de priorización forma parte de un sistema ABM de gestión de guardia hospitalaria y cumple un rol de apoyo a la toma de decisiones, sin reemplazar al criterio humano.
+
+Sus responsabilidades principales son:
+- Analizar los pacientes que se encuentran en la lista de espera.
+- Respetar el nivel de emergencia asignado por la enfermera.
+- Sugerir el paciente más prioritario dentro del nivel de emergencia más alto.
+- Brindar una justificación de la priorización basada en datos clínicos y observaciones.
+
+El agente no modifica datos, no asigna niveles de emergencia y no decide la atención médica, sino que actúa como un asistente inteligente para el personal médico.
+
+3. Flujo general de funcionamiento
+
+El funcionamiento del agente se integra al flujo normal del sistema de la siguiente manera:
+
+a- La enfermera registra el ingreso del paciente.
+b- Se cargan los signos vitales, observaciones e informe clínico.
+c- La enfermera asigna un nivel de emergencia.
+d- El paciente queda en la lista de espera.
+e- El agente analiza los pacientes pendientes.
+f- El agente sugiere cuál atender primero.
+g- El médico puede reclamar al paciente sugerido desde la interfaz.
+
+4. Algoritmo de priorización
+4.1 Agrupación por nivel de emergencia
+
+El primer paso del algoritmo consiste en agrupar todos los ingresos pendientes según su nivel de emergencia.
+Este nivel es definido exclusivamente por la enfermera y representa el criterio de mayor peso en la priorización.
+
+Ejemplo de niveles: Crítica, Urgencia, Moderada, Baja
+
+4.2 Selección del nivel de emergencia más alto
+
+Una vez agrupados los pacientes, el agente identifica el nivel de emergencia más alto presente en la lista de espera.
+
+Regla fundamental:
+Un paciente de menor nivel de emergencia nunca puede ser priorizado por sobre uno de mayor nivel, independientemente de sus signos vitales u observaciones.
+
+4.3 Sistema de puntuación dentro del mismo nivel
+
+El sistema de puntuación se aplica únicamente a los pacientes que pertenecen al nivel de emergencia más alto seleccionado.
+
+La puntuación se calcula a partir de los siguientes criterios:
+
+a- Signos vitales
+
+Se analizan valores anormales de:
+
+Temperatura corporal
+Frecuencia cardíaca
+Frecuencia respiratoria
+Presión arterial
+
+Cuanto mayor sea la desviación de los valores normales, mayor será la puntuación asignada.
+
+b- Observaciones e informe clínico
+
+El agente analiza el texto ingresado por la enfermera buscando palabras clave asociadas a síntomas urgentes o críticos, tales como:
+
+Dolor intenso
+Sangrado
+Dificultad respiratoria
+Pérdida de conciencia
+Convulsiones
+
+Las palabras críticas otorgan mayor puntuación que las palabras urgentes generales.
+
+c- Tiempo de espera
+
+El tiempo transcurrido desde el ingreso del paciente también se considera, aunque con menor peso que los criterios clínicos.
+Este criterio permite desempatar situaciones similares sin comprometer la prioridad médica.
+
+4.4 Desempate
+
+En caso de que dos o más pacientes obtengan la misma puntuación:
+Se prioriza al paciente que haya ingresado primero (mayor tiempo de espera).
+
+5. Método principal del agente
+
+El agente se implementa en la clase AgentePriorizacion, siendo su método principal:
+
+sugerirPacientePrioritario(ingresos: Ingreso[]): Ingreso | null
+
+- Devuelve el ingreso sugerido para atención
+- Devuelve null si no existen pacientes pendientes
+- Garantiza la priorización correcta por nivel de emergencia y criterios clínicos 
+
+6. Justificación de las decisiones de diseño
+
+Prioridad absoluta al nivel de emergencia: refleja el funcionamiento real de una guardia hospitalaria
+Scoring clínico secundario: permite ordenar pacientes similares sin invalidar la clasificación previa
+Análisis textual simple: ofrece una solución efectiva sin necesidad de procesamiento de lenguaje natural avanzado
+Agente no intrusivo: mantiene el control final en manos del personal médico
+
+7. Ejemplo práctico
+
+Supóngase la siguiente situación:
+
+Paciente A: Nivel Crítico, signos vitales estables.
+Paciente B: Nivel Urgencia, signos vitales alterados.
+Paciente C: Nivel Crítico, signos vitales alterados.
+
+El agente:
+
+Selecciona el nivel Crítico.
+Analiza solo al Paciente A y C.
+Asigna mayor puntuación al Paciente C.
+Sugiere atender primero al Paciente C.
+
+8. Limitaciones del agente
+
+- No reemplaza la evaluación médica.
+- Depende de la calidad de los datos ingresados.
+- No utiliza inteligencia artificial avanzada ni aprendizaje automático.
+- El análisis textual se basa en coincidencias simples de palabras clave.
+
+9. Posibles mejoras futuras
+
+Incorporar aprendizaje automático basado en historiales.
+Ajustar dinámicamente los pesos de puntuación.
+Integrar escalas clínicas estandarizadas (por ejemplo, triage ESI).
+Ampliar el análisis semántico del informe clínico.
