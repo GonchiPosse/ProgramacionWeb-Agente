@@ -48,8 +48,6 @@ Un paciente de menor nivel de emergencia nunca puede ser priorizado por sobre un
 
 4.3 Sistema de puntuación dentro del mismo nivel
 
-El sistema de puntuación se aplica únicamente a los pacientes que pertenecen al nivel de emergencia más alto seleccionado.
-
 La puntuación se calcula a partir de los siguientes criterios:
 
 a- Signos vitales
