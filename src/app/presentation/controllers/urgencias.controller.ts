@@ -9,7 +9,7 @@ import { Email } from '../../../models/valueobjects/email.js';
 import { Afiliado } from '../../../models/afiliado.js';
 import { ObraSocial } from '../../../models/obraSocial.js';
 import { Domicilio } from '../../../models/domicilio.js';
-import { ResultadoPriorizacion } from '../../service/agentePriorizacion.js';
+import { ResultadoPriorizacion } from '../../service/expertoPriorizacion.js';
 
 export class UrgenciasController {
   private urgenciaService: UrgenciaService;

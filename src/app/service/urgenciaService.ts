@@ -9,7 +9,7 @@ import { FrecuenciaCardiaca } from "../../models/valueobjects/frecuenciaCardiaca
 import { FrecuenciaRespiratoria } from "../../models/valueobjects/frecuenciaRespiratoria.js";
 import { TensionArterial } from "../../models/valueobjects/tensionArterial.js";
 import { Atencion } from "../../models/atencion.js";
-import { AgentePriorizacion, ResultadoPriorizacion } from "./agentePriorizacion.js";
+import { ExpertoPriorizacion, ResultadoPriorizacion } from "./expertoPriorizacion.js";
 
 interface RegistrarUrgenciaArgs {
   cuil: string;
@@ -27,14 +27,14 @@ export class UrgenciaService {
   private repoPacientes: RepoPacientes;
   private listaEspera: Ingreso[] = [];
   private atenciones: Atencion[] = [];
-  private agentePriorizacion: AgentePriorizacion;
+  private expertoPriorizacion: ExpertoPriorizacion;
 
   public constructor(
     repoPacientes: RepoPacientes,
-    agentePriorizacion: AgentePriorizacion = new AgentePriorizacion(),
+    expertoPriorizacion: ExpertoPriorizacion = new ExpertoPriorizacion(),
   ) {
     this.repoPacientes = repoPacientes;
-    this.agentePriorizacion = agentePriorizacion;
+    this.expertoPriorizacion = expertoPriorizacion;
   }
 
   public registrarUrgencia({
@@ -77,12 +77,12 @@ export class UrgenciaService {
 
   public sugerirProximoIngreso(): ResultadoPriorizacion | null {
     const pendientes: Ingreso[] = this.obtenerIngresosPendientesOrdenados();
-    return this.agentePriorizacion.sugerir(pendientes, new Date());
+    return this.expertoPriorizacion.sugerir(pendientes, new Date());
   }
 
   public sugerirOrdenDeAtencion(): ResultadoPriorizacion[] {
     const pendientes: Ingreso[] = this.obtenerIngresosPendientesOrdenados();
-    return this.agentePriorizacion.sugerirOrden(pendientes, new Date());
+    return this.expertoPriorizacion.sugerirOrden(pendientes, new Date());
   }
 
   public registrarAtencion(

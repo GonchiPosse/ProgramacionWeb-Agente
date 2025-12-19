@@ -9,13 +9,13 @@ export interface ResultadoPriorizacion {
   nivelEmergencia: NivelEmergencia;
 }
 
-export class AgentePriorizacion {
+export class ExpertoPriorizacion {
   public sugerir(
     ingresos: Ingreso[],
     ahora: Date = new Date(),
   ): ResultadoPriorizacion | null {
     const orden: ResultadoPriorizacion[] = this.sugerirOrden(ingresos, ahora);
-    return orden.length > 0 ? orden[0] : null;
+    return orden.length > 0 ? orden[0]! : null;
   }
 
   public sugerirOrden(
@@ -173,5 +173,3 @@ export class AgentePriorizacion {
     return 0;
   }
 }
-
-

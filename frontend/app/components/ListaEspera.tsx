@@ -406,7 +406,7 @@ export default function ListaEspera({
           >
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 700, marginBottom: "0.25rem" }}>
-                Sugerencia del agente
+                Sugerencia del experto
               </div>
               <div style={{ color: "var(--secondary)", marginBottom: "0.5rem" }}>
                 {sugerencia.sugerido.paciente.nombre}{" "}

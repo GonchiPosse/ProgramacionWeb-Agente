@@ -1,15 +1,15 @@
-Agente de Priorizacion de Pacientes
+Experto de Priorizacion de Pacientes
 
 1. Introduccion 
 En los servicios de guardia hospitalaria, la correcta priorización de pacientes es un factor crítico para garantizar una atención oportuna y segura. Dado que múltiples pacientes pueden encontrarse simultáneamente en espera, 
 resulta necesario contar con un mecanismo que ayude al personal médico a decidir a quién atender primero, especialmente cuando existen casos con niveles de urgencia similares.
 
-En este contexto, se implementó un Agente de Priorización de Pacientes, cuyo objetivo es analizar la información registrada durante el ingreso del paciente y sugerir cuál debería ser atendido prioritariamente, 
+En este contexto, se implementó un Experto de Priorización de Pacientes, cuyo objetivo es analizar la información registrada durante el ingreso del paciente y sugerir cuál debería ser atendido prioritariamente, 
 respetando siempre los criterios clínicos definidos por el personal de enfermería.
 
-2. Rol del agente dentro del sistema
+2. Rol del experto dentro del sistema
 
-El agente de priorización forma parte de un sistema ABM de gestión de guardia hospitalaria y cumple un rol de apoyo a la toma de decisiones, sin reemplazar al criterio humano.
+El experto de priorización forma parte de un sistema ABM de gestión de guardia hospitalaria y cumple un rol de apoyo a la toma de decisiones, sin reemplazar al criterio humano.
 
 Sus responsabilidades principales son:
 - Analizar los pacientes que se encuentran en la lista de espera.
@@ -17,18 +17,18 @@ Sus responsabilidades principales son:
 - Sugerir el paciente más prioritario dentro del nivel de emergencia más alto.
 - Brindar una justificación de la priorización basada en datos clínicos y observaciones.
 
-El agente no modifica datos, no asigna niveles de emergencia y no decide la atención médica, sino que actúa como un asistente inteligente para el personal médico.
+El experto no modifica datos, no asigna niveles de emergencia y no decide la atención médica, sino que actúa como un asistente inteligente para el personal médico.
 
 3. Flujo general de funcionamiento
 
-El funcionamiento del agente se integra al flujo normal del sistema de la siguiente manera:
+El funcionamiento del experto se integra al flujo normal del sistema de la siguiente manera:
 
 a- La enfermera registra el ingreso del paciente.
 b- Se cargan los signos vitales, observaciones e informe clínico.
 c- La enfermera asigna un nivel de emergencia.
 d- El paciente queda en la lista de espera.
-e- El agente analiza los pacientes pendientes.
-f- El agente sugiere cuál atender primero.
+e- El experto analiza los pacientes pendientes.
+f- El experto sugiere cuál atender primero.
 g- El médico puede reclamar al paciente sugerido desde la interfaz.
 
 4. Algoritmo de priorización
@@ -41,7 +41,7 @@ Ejemplo de niveles: Crítica, Urgencia, Moderada, Baja
 
 4.2 Selección del nivel de emergencia más alto
 
-Una vez agrupados los pacientes, el agente identifica el nivel de emergencia más alto presente en la lista de espera.
+Una vez agrupados los pacientes, el experto identifica el nivel de emergencia más alto presente en la lista de espera.
 
 Regla fundamental:
 Un paciente de menor nivel de emergencia nunca puede ser priorizado por sobre uno de mayor nivel, independientemente de sus signos vitales u observaciones.
@@ -63,7 +63,7 @@ Cuanto mayor sea la desviación de los valores normales, mayor será la puntuaci
 
 b- Observaciones e informe clínico
 
-El agente analiza el texto ingresado por la enfermera buscando palabras clave asociadas a síntomas urgentes o críticos, tales como:
+El experto analiza el texto ingresado por la enfermera buscando palabras clave asociadas a síntomas urgentes o críticos, tales como:
 
 Dolor intenso
 Sangrado
@@ -83,9 +83,9 @@ Este criterio permite desempatar situaciones similares sin comprometer la priori
 En caso de que dos o más pacientes obtengan la misma puntuación:
 Se prioriza al paciente que haya ingresado primero (mayor tiempo de espera).
 
-5. Método principal del agente
+5. Método principal del experto
 
-El agente se implementa en la clase AgentePriorizacion, siendo su método principal:
+El experto se implementa en la clase ExpertoPriorizacion, siendo su método principal:
 
 sugerirPacientePrioritario(ingresos: Ingreso[]): Ingreso | null
 
@@ -98,7 +98,7 @@ sugerirPacientePrioritario(ingresos: Ingreso[]): Ingreso | null
 Prioridad absoluta al nivel de emergencia: refleja el funcionamiento real de una guardia hospitalaria
 Scoring clínico secundario: permite ordenar pacientes similares sin invalidar la clasificación previa
 Análisis textual simple: ofrece una solución efectiva sin necesidad de procesamiento de lenguaje natural avanzado
-Agente no intrusivo: mantiene el control final en manos del personal médico
+Experto no intrusivo: mantiene el control final en manos del personal médico
 
 7. Ejemplo práctico
 
@@ -108,14 +108,14 @@ Paciente A: Nivel Crítico, signos vitales estables.
 Paciente B: Nivel Urgencia, signos vitales alterados.
 Paciente C: Nivel Crítico, signos vitales alterados.
 
-El agente:
+El experto:
 
 Selecciona el nivel Crítico.
 Analiza solo al Paciente A y C.
 Asigna mayor puntuación al Paciente C.
 Sugiere atender primero al Paciente C.
 
-8. Limitaciones del agente
+8. Limitaciones del experto
 
 - No reemplaza la evaluación médica.
 - Depende de la calidad de los datos ingresados.
